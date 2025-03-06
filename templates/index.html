@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --success-color: #4ade80;
+            --danger-color: #f87171;
+            --light-bg: #f9fafb;
+            --dark-text: #1f2937;
+            --light-text: #f3f4f6;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+        
+        #scanner-container {
+            width: 100%;
+            margin: 0 auto 20px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            position: relative;
+            background-color: #f3f4f6;
+        }
+        
+        #qr-video {
+            width: 100%;
+            max-height: 70vh;
+            background-color: #000;
+            display: block;
+            border-radius: var(--border-radius);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .button {
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        .button:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .button i {
+            font-size: 1.1rem;
+        }
+        
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            font-weight: 500;
+            min-height: 50px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background-color: #f3f4f6;
+            transition: all 0.3s ease;
+        }
+        
+        .success {
+            color: #166534;
+            background-color: #dcfce7 !important;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .error {
+            color: #991b1b;
+            background-color: #fee2e2 !important;
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        #manual-input-form {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9fafb;
+            border-radius: var(--border-radius);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #4b5563;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        #form-action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .entrance-btn {
+            background-color: #10b981;
+        }
+        
+        .entrance-btn:hover {
+            background-color: #059669;
+        }
+        
+        .exit-btn {
+            background-color: #f59e0b;
+        }
+        
+        .exit-btn:hover {
+            background-color: #d97706;
+        }
+        
+        #student-info {
+            display: none;
+        }
+        
+        /* Responsive styling */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .button {
+                width: 100%;
+            }
+            
+            #form-action-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        /* Status indicator for camera */
+        .scanner-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--danger-color);
+        }
+        
+        .scanner-active {
+            background-color: var(--success-color);
+        }
+        
+        .scanning-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .scanner-container.scanning .scanning-overlay {
+            opacity: 1;
+        }
+        
+        /* Additional styles for simplified form */
+        #manual-input-form h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Style for numeric input */
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            -moz-appearance: textfield; /* Firefox */
+        }
+        
+        /* Remove spinner buttons for number input */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .invalid-input {
+            border-color: var(--danger-color) !important;
+            background-color: #fef2f2;
+        }
+        
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Student Attendance System</h1>
+            <p class="subtitle">Scan any QR code to open the attendance form</p>
+        </header>
+        
+        <div id="scanner-container" class="scanner-container">
+            <video id="qr-video" playsinline></video>
+            <div class="scanner-status"></div>
+            <div class="scanning-overlay">
+                <div>Scanning... <i class="fas fa-qrcode"></i></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="start-button" class="button">
+                <i class="fas fa-camera"></i> Start Scanner
+            </button>
+            <button id="stop-button" class="button" disabled>
+                <i class="fas fa-stop"></i> Stop Scanner
+            </button>
+        </div>
+
+        <div id="result">Scan any QR code to begin</div>
+
+        <form id="manual-input-form">
+            <h3>Student Attendance Form</h3>
+            
+            <div class="form-group">
+                <label for="student-id">Enter Holberton Student ID:</label>
+                <input type="number" id="student-id" required placeholder="Enter Student ID" 
+                       min="1" step="1" pattern="[0-9]*" inputmode="numeric">
+                <div id="id-error" class="error-message">Please enter a valid numeric Student ID</div>
+            </div>
+            
+            <div id="form-action-buttons">
+                <button type="button" id="form-entrance-button" class="button entrance-btn">
+                    <i class="fas fa-sign-in-alt"></i> Submit Entrance
+                </button>
+                <button type="button" id="form-exit-button" class="button exit-btn">
+                    <i class="fas fa-sign-out-alt"></i> Submit Exit
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Include the jsQR library for QR code detection -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const video = document.getElementById('qr-video');
+            const startButton = document.getElementById('start-button');
+            const stopButton = document.getElementById('stop-button');
+            const resultElement = document.getElementById('result');
+            const manualForm = document.getElementById('manual-input-form');
+            const studentIdInput = document.getElementById('student-id');
+            const idError = document.getElementById('id-error');
+            const formEntranceButton = document.getElementById('form-entrance-button');
+            const formExitButton = document.getElementById('form-exit-button');
+            const scannerContainer = document.getElementById('scanner-container');
+            const scannerStatus = document.querySelector('.scanner-status');
+            
+            let scanning = false;
+            let stream = null;
+            
+            // Start the QR scanner
+            startButton.addEventListener('click', startScanner);
+            stopButton.addEventListener('click', stopScanner);
+            
+            // Validate the student ID input to ensure it only contains numbers
+            studentIdInput.addEventListener('input', function(e) {
+                const value = e.target.value;
+                
+                // Remove any non-numeric characters
+                if (!/^\d*$/.test(value)) {
+                    e.target.value = value.replace(/[^\d]/g, '');
+                }
+                
+                // Visual validation feedback
+                if (e.target.value.trim() === '') {
+                    studentIdInput.classList.add('invalid-input');
+                    idError.style.display = 'block';
+                } else {
+                    studentIdInput.classList.remove('invalid-input');
+                    idError.style.display = 'none';
+                }
+            });
+            
+            formEntranceButton.addEventListener('click', () => {
+                const id = studentIdInput.value.trim();
+                if (id && /^\d+$/.test(id)) {
+                    submitAttendance('Entrance', id);
+                    resetFormAndStartScanner();
+                } else {
+                    studentIdInput.classList.add('invalid-input');
+                    idError.style.display = 'block';
+                    showMessage("Please enter a valid numeric Student ID", "error");
+                }
+            });
+            
+            formExitButton.addEventListener('click', () => {
+                const id = studentIdInput.value.trim();
+                if (id && /^\d+$/.test(id)) {
+                    submitAttendance('Exit', id);
+                    resetFormAndStartScanner();
+                } else {
+                    studentIdInput.classList.add('invalid-input');
+                    idError.style.display = 'block';
+                    showMessage("Please enter a valid numeric Student ID", "error");
+                }
+            });
+            
+            function resetFormAndStartScanner() {
+                manualForm.style.display = 'none';
+                studentIdInput.value = '';
+                studentIdInput.classList.remove('invalid-input');
+                idError.style.display = 'none';
+                showMessage('Ready to scan next QR code', '');
+            }
+            
+            function showMessage(message, className) {
+                resultElement.textContent = message;
+                resultElement.className = className;
+            }
+            
+            function startScanner() {
+                manualForm.style.display = 'none';
+                scannerContainer.classList.add('scanning');
+                
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ 
+                        video: { 
+                            facingMode: "environment",
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 } 
+                        } 
+                    })
+                    .then(function(videoStream) {
+                        stream = videoStream;
+                        video.srcObject = videoStream;
+                        video.play();
+                        scanning = true;
+                        startButton.disabled = true;
+                        stopButton.disabled = false;
+                        scannerStatus.classList.add('scanner-active');
+                        showMessage('Scanning for any QR code...', '');
+                        scanQRCode();
+                    })
+                    .catch(function(error) {
+                        console.error("Error accessing the camera:", error);
+                        showMessage("Error accessing the camera. Please make sure you've granted camera permissions.", "error");
+                        scannerContainer.classList.remove('scanning');
+                    });
+                } else {
+                    showMessage("Sorry, your browser doesn't support camera access.", "error");
+                    scannerContainer.classList.remove('scanning');
+                }
+            }
+            
+            function stopScanner() {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    video.srcObject = null;
+                }
+                scanning = false;
+                startButton.disabled = false;
+                stopButton.disabled = true;
+                scannerStatus.classList.remove('scanner-active');
+                scannerContainer.classList.remove('scanning');
+            }
+            
+            function scanQRCode() {
+                if (!scanning) return;
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                
+                if (video.videoWidth && video.videoHeight) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: "dontInvert",
+                    });
+                    
+                    if (code) {
+                        // QR code detected - just stop scanner and show form
+                        showMessage(`QR Code detected! Please enter student details.`, "success");
+                        stopScanner();
+                        scannerContainer.classList.remove('scanning');
+                        
+                        // Clear and show the form
+                        studentIdInput.value = '';
+                        studentIdInput.classList.remove('invalid-input');
+                        idError.style.display = 'none';
+                        studentIdInput.focus();
+                        manualForm.style.display = 'block';
+                    }
+                }
+                
+                if (scanning) {
+                    requestAnimationFrame(scanQRCode);
+                }
+            }
+            
+            function submitAttendance(action, studentId) {
+                if (!studentId) return;
+                
+                showMessage(`Submitting ${action.toLowerCase()} record...`, '');
+                
+                fetch('/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        student_id: studentId,   // Make sure this key matches what the server expects
+                        action: action
+                    }),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        // Log the error response for debugging
+                        response.text().then(text => console.error('Server response:', text));
+                        throw new Error(`Server returned ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        showMessage(`${action} recorded successfully for Student ID: ${studentId}`, "success");
+                        
+                        // Wait a moment before resetting for next scan
+                        setTimeout(() => {
+                            startButton.disabled = false;
+                            showMessage('Ready to scan next QR code. Press "Start Scanner"', '');
+                        }, 2000);
+                    } else {
+                        showMessage(`Error: ${data.message || 'Unknown error'}`, "error");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error details:', error);
+                    showMessage(`Error submitting data: ${error.message}`, "error");
+                });
+            }
+            
+            // Hide form on initial load
+            manualForm.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
